@@ -12,7 +12,7 @@
 
 ## Những recipe chưa chạy thật
 
-`tiktok-post` và `facebook-post` viết theo bố cục trang đọc được ngày 12/10/2026 nhưng **chưa đăng thật lần nào**. Lần đầu dùng:
+`tiktok-post` đã chạy thật tới nút Post ngày 12/10/2026 (ô mô tả của TikTok Studio là `combobox`, được điền sẵn tên file). `facebook-post` viết theo bố cục trang nhưng **chưa chạy thật**. Cả hai chưa bấm đăng thật lần nào. Lần đầu dùng:
 
 1. Chạy, đến bước hỏi "Bấm nút 'Post'?" thì gõ **không** để xem các bước trước có đúng không.
 2. Đúng hết thì chạy lại và gõ **có**.

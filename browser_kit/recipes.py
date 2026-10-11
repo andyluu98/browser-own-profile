@@ -73,10 +73,17 @@ def tiktok_studio_post(kit, video_path, caption, upload_timeout=300):
         raise Blocked("không thấy ô chọn video trên TikTok Studio (chưa đăng nhập hoặc trang đã đổi)")
     kit.upload(inputs[0], os.path.abspath(video_path))
 
+    # TikTok pre-fills the description with the file name (seen 12/10/2026: a role=combobox editor named
+    # 'video-thu' for video-thu.mp4); the location picker is also a combobox, so match on that name first.
+    stem = fold(os.path.splitext(os.path.basename(video_path))[0])
+
     def caption_box(s):
-        boxes = [e for e in find(s, kind="fill") if e.get("role") == "textbox"
-                 and "search" not in fold(e.get("name", ""))]
-        return boxes[0] if boxes else None
+        boxes = [e for e in find(s, kind="fill") if e.get("role") in ("textbox", "combobox")]
+        named = [e for e in boxes if stem and stem in (fold(e.get("name", "")), fold(e.get("value", "")))]
+        if named:
+            return named[0]
+        plain = [e for e in boxes if e.get("role") == "textbox" and "search" not in fold(e.get("name", ""))]
+        return plain[0] if plain else None
 
     box = kit.wait_for(caption_box, timeout=60)
     if box is None:
