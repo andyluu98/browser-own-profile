@@ -1,0 +1,131 @@
+"""Command line.
+
+  python -m browser_kit login --site shopee            sign in once in the separate profile (plain Chrome)
+  python -m browser_kit check --site tiktok [--main]   open a site, show what the tool sees, close
+  python -m browser_kit shopee --keyword "bàn phím" --min 800000 --max 1200000 --limit 10
+  python -m browser_kit tiktok-comments --url <video link> --limit 30 --main
+  python -m browser_kit tiktok-post --video clip.mp4 --caption "..."     (asks before Post)
+  python -m browser_kit facebook-post --text "..." [--main]              (asks before Post)
+
+--main uses your own running Chrome (turn on chrome://inspect/#remote-debugging, click Allow once per run).
+Without it, the separate profile in %LOCALAPPDATA%\\browser-own-profile\\chrome is used (no prompt).
+"""
+
+import argparse
+import csv
+import pathlib
+import re
+import subprocess
+import sys
+import unicodedata
+
+from . import recipes
+from .guard import SITES, Blocked, Declined, Kit, fold
+from .worker import default_profile, find_chrome
+
+OUTPUT = pathlib.Path.cwd() / "output"
+
+
+def next_path(slug, ext):
+    """output/NN_slug.ext with NN = highest existing number + 1 (any extension)."""
+    OUTPUT.mkdir(exist_ok=True)
+    nums = [int(m.group(1)) for p in OUTPUT.iterdir() if (m := re.match(r"(\d{2,3})_", p.name))]
+    plain = unicodedata.normalize("NFD", fold(slug).replace("đ", "d"))
+    plain = "".join(c for c in plain if not unicodedata.combining(c))
+    slug = re.sub(r"[^a-z0-9]+", "-", plain).strip("-")[:40] or "ket-qua"
+    return OUTPUT / f"{max(nums, default=0) + 1:02d}_{slug}.{ext}"
+
+
+def save_rows(rows, slug, raw_text):
+    if not rows:  # keep the raw page text so the parser can be fixed (docs/05)
+        path = next_path(slug + "-raw", "txt")
+        path.write_text(raw_text, encoding="utf-8")
+        print(f"Không tách được dòng nào. Đã lưu chữ thô của trang để kiểm tra: {path}")
+        return
+    path = next_path(slug, "csv")
+    with path.open("w", encoding="utf-8-sig", newline="") as f:  # utf-8-sig: Excel shows Vietnamese right
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    print(f"Đã lưu {len(rows)} dòng: {path}")
+
+
+def login(site):
+    if site not in SITES:
+        sys.exit(f"Không có trang '{site}'. Các trang có: {', '.join(sorted(SITES))}")
+    profile = default_profile()
+    profile.mkdir(parents=True, exist_ok=True)
+    # Plain Chrome, nothing attached: you sign in exactly like a normal user.
+    proc = subprocess.Popen([find_chrome(), f"--user-data-dir={profile}", "--no-first-run",
+                             "--no-default-browser-check", SITES[site]["url"]])
+    print(f"Đã mở {SITES[site]['name']} trong Chrome riêng ({profile}).")
+    print("Đăng nhập xong thì ĐÓNG HẲN cửa sổ Chrome đó (cả các tab của nó). Đang chờ...")
+    try:
+        proc.wait()
+    except KeyboardInterrupt:
+        pass
+    print("Xong. Các lệnh sau sẽ dùng phiên đăng nhập này.")
+
+
+def main(argv=None):
+    sys.stdout.reconfigure(encoding="utf-8")
+    ap = argparse.ArgumentParser(prog="python -m browser_kit")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("login", help="đăng nhập một lần trong Chrome riêng")
+    p.add_argument("--site", required=True)
+    p = sub.add_parser("check", help="mở trang, in những gì công cụ thấy")
+    p.add_argument("--site", required=True)
+    p = sub.add_parser("shopee", help="sản phẩm bán chạy trên Shopee")
+    p.add_argument("--keyword", required=True)
+    p.add_argument("--min", type=int)
+    p.add_argument("--max", type=int)
+    p.add_argument("--limit", type=int, default=10)
+    p = sub.add_parser("tiktok-comments", help="bình luận của một video TikTok")
+    p.add_argument("--url", required=True)
+    p.add_argument("--limit", type=int, default=30)
+    p = sub.add_parser("tiktok-post", help="đăng video của bạn qua TikTok Studio (hỏi trước khi đăng)")
+    p.add_argument("--video", required=True)
+    p.add_argument("--caption", required=True)
+    p = sub.add_parser("facebook-post", help="đăng bài chữ lên Facebook của bạn (hỏi trước khi đăng)")
+    p.add_argument("--text", required=True)
+    for name, sp in sub.choices.items():
+        if name != "login":
+            sp.add_argument("--main", action="store_true", help="dùng Chrome chính đang mở (Chrome hỏi Allow)")
+    args = ap.parse_args(argv)
+
+    if args.cmd == "login":
+        return login(args.site)
+    try:
+        with Kit(main=args.main) as kit:
+            if args.cmd == "check":
+                if args.site not in SITES:
+                    sys.exit(f"Không có trang '{args.site}'. Các trang có: {', '.join(sorted(SITES))}")
+                page = kit.open(SITES[args.site]["url"])
+                snap = kit.snapshot()
+                print(f"Mở được: {page['title']!r}. Thấy {len(snap['elements'])} nút và ô, ví dụ:")
+                for e in snap["elements"][:12]:
+                    print(f"  {e['kind']:6} {e.get('role', ''):9} {e.get('name', '')[:60]}")
+            elif args.cmd == "shopee":
+                rows, raw = recipes.shopee_search(kit, args.keyword, args.min, args.max, args.limit)
+                for i, r in enumerate(rows, 1):
+                    print(f"{i:2}. {r['price']}đ | {r['sold']} | {r['rating']} | {r['title'][:70]}")
+                save_rows(rows, f"shopee-{args.keyword}", raw)
+            elif args.cmd == "tiktok-comments":
+                rows, raw = recipes.tiktok_comments(kit, args.url, args.limit)
+                for i, r in enumerate(rows, 1):
+                    print(f"{i:2}. [{r['likes']} thích] {r['name']}: {r['comment'][:90]}")
+                save_rows(rows, "tiktok-binh-luan", raw)
+            elif args.cmd == "tiktok-post":
+                print(recipes.tiktok_studio_post(kit, args.video, args.caption))
+            elif args.cmd == "facebook-post":
+                print(recipes.facebook_post(kit, args.text))
+    except Blocked as e:
+        sys.exit(f"DỪNG: {e}")
+    except Declined as e:
+        sys.exit(f"Đã hủy: {e}")
+    except Exception as e:
+        sys.exit(f"Lỗi: {e}")
+
+
+if __name__ == "__main__":
+    main()

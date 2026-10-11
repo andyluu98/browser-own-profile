@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Đăng video</title></head>
+<body>
+<h1>Đăng video</h1>
+<div class="dropzone">
+  <button type="button" id="pick">Chọn video</button>
+  <input type="file" id="file" accept="video/*" hidden>
+</div>
+<p id="fname"></p>
+<label for="desc">Mô tả</label><br>
+<textarea id="desc" rows="4" cols="40"></textarea><br>
+<button type="button" id="post" disabled>Đăng</button>
+<p id="status"></p>
+<script>
+  const file = document.getElementById('file'), post = document.getElementById('post');
+  document.getElementById('pick').addEventListener('click', () => file.click());
+  file.addEventListener('change', () => {
+    const f = file.files[0];
+    document.getElementById('fname').textContent = f ? 'Đã chọn: ' + f.name : '';
+    post.disabled = !f;
+  });
+  post.addEventListener('click', () => {
+    document.getElementById('status').textContent = 'Đã đăng: ' + file.files[0].name;
+  });
+</script>
+</body>
+</html>

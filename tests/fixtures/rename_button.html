@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Đổi tên nút</title></head>
+<body>
+<h1>Đổi tên nút</h1>
+<button type="button" id="b">Tiếp</button>
+<p id="status"></p>
+<script>
+  const b = document.getElementById('b');
+  setTimeout(() => { b.textContent = 'Đăng'; }, 800);
+  b.addEventListener('click', () => {
+    document.getElementById('status').textContent = 'Đã bấm: ' + b.textContent;
+  });
+</script>
+</body>
+</html>

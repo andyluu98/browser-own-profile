@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Đổi chữ nút</title></head>
+<body>
+<button type="button" id="b" aria-label="Next">Next</button>
+<p id="status"></p>
+<script>
+  const b = document.getElementById('b');
+  setTimeout(() => { b.textContent = 'Post'; }, 800);  // aria-label stays "Next"
+  b.addEventListener('click', () => {
+    document.getElementById('status').textContent = 'Đã bấm: ' + b.textContent;
+  });
+</script>
+</body>
+</html>

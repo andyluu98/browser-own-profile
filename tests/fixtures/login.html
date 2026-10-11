@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Đăng nhập</title></head>
+<body>
+<h1>Đăng nhập</h1>
+<form onsubmit="return false">
+  <label for="u">Tên đăng nhập</label>
+  <input id="u" name="username" type="text">
+  <label for="p">Mật khẩu</label>
+  <input id="p" name="pw" type="password">
+  <input id="c" type="text" aria-label="Số thẻ" autocomplete="cc-number">
+  <input id="o" type="text" name="code" autocomplete="one-time-code">
+  <input id="t" type="text" name="api_token">
+  <input id="long" type="text" aria-label="Ghi chú">
+  <button type="submit">Vào</button>
+</form>
+<script>
+  // Prefilled by script, like a browser password manager would.
+  document.getElementById('u').value = 'anh-nam';
+  document.getElementById('p').value = 'S3cret-Pass';
+  document.getElementById('c').value = '4111111111111111';
+  document.getElementById('o').value = '918273';
+  document.getElementById('t').value = 'tok-ABCDEF123';
+  document.getElementById('long').value = 'x'.repeat(200);
+</script>
+</body>
+</html>

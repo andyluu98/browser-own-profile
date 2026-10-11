@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Công cụ tạo video</title></head>
+<body>
+<h1>Tạo video</h1>
+<label for="prompt">Nhập prompt</label><br>
+<textarea id="prompt" rows="4" cols="40"></textarea><br>
+<button type="button" id="gen">Tạo</button>
+<p id="status"></p>
+<a href="second_page.html" target="_blank">Xem lịch sử</a>
+<script>
+  document.getElementById('gen').addEventListener('click', () => {
+    const s = document.getElementById('status');
+    s.textContent = 'Đang tạo...';
+    setTimeout(() => { s.textContent = 'Xong'; }, 2000);
+  });
+</script>
+</body>
+</html>
