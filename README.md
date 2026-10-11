@@ -4,7 +4,19 @@
 
 Bộ này **không lách** cơ chế chống bot. Nó chạy được vì dùng profile đã đăng nhập và làm với lượng nhỏ, giống người dùng thật. Gặp captcha thì nó **dừng và báo**, không giải hộ. Đọc [docs/03](docs/03_vi-sao-bi-chan.md) để hiểu vì sao.
 
-## Bắt đầu trong 10 phút
+## Dùng với Claude Code (không cần biết terminal)
+
+1. Cài [Claude Code](https://claude.com/claude-code) (bản desktop), Google Chrome.
+2. Mở Claude Code, chọn thư mục để chứa repo, gõ:
+   > Tải repo andyluu98/browser-own-profile từ GitHub về máy và cài đặt theo CLAUDE.md của repo.
+3. Mở Claude Code ngay trong thư mục `browser-own-profile`, rồi nói việc cần làm, ví dụ:
+   > Tìm 10 bàn phím bán chạy tầm 1 triệu trên Shopee.
+
+Claude tự cài, tự chạy lệnh. Trang nào cần đăng nhập thì Claude mở Chrome cho bạn đăng nhập (chỉ trang đó), bạn đăng nhập xong đóng cửa sổ Chrome rồi báo Claude. Đăng bài thì Claude luôn hỏi bạn trước.
+
+Repo đang để private: học viên cần được mời vào repo (GitHub, Settings, Collaborators) hoặc nhận bản nén từ người quản lý thì mới tải được.
+
+## Bắt đầu trong 10 phút (tự chạy lệnh)
 
 Cần Windows, Google Chrome, Python 3.11 trở lên.
 

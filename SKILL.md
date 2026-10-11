@@ -9,9 +9,10 @@ Bộ lệnh `python -m browser_kit` trong thư mục repo này. Chạy bằng `.
 
 ## Quy trình
 
-1. **Kiểm tra đăng nhập.** Nếu lệnh báo "yêu cầu đăng nhập", đưa người dùng lệnh đầy đủ:
-   `cd /d <thư mục repo> && .venv\Scripts\python -m browser_kit login --site <trang>`
-   rồi chờ họ báo đã đăng nhập và **đã đóng hẳn cửa sổ Chrome đó**.
+0. **Lần đầu:** làm theo mục "Cài đặt" trong `CLAUDE.md` của repo; `doctor` phải in "SẴN SÀNG".
+1. **Đăng nhập khi cần.** Nếu lệnh báo "yêu cầu đăng nhập", tự chạy
+   `.venv\Scripts\python -m browser_kit login --site <trang> --no-wait`
+   rồi nhờ người dùng đăng nhập và **đóng hẳn cửa sổ Chrome đó**, chờ họ báo xong.
 2. **Chạy lệnh phù hợp** (xem README, bảng "Các lệnh"). Đọc dữ liệu thì dùng `shopee` hoặc `tiktok-comments`; đăng bài thì dùng `tiktok-post` hoặc `facebook-post`.
 3. **Báo kết quả** kèm đường dẫn file CSV trong `output\`. Số "đã bán" của Shopee là nhãn làm tròn (8k+), không phải số chính xác.
 
@@ -23,7 +24,7 @@ Bộ lệnh `python -m browser_kit` trong thư mục repo này. Chạy bằng `.
 ## Ranh giới bắt buộc
 
 - Lệnh báo **"DỪNG: Trang đang hỏi xác minh"** thì dừng, báo người dùng. **Không** giải captcha, không thử lại liên tục, không đổi cách để né, không giả thao tác người.
-- Đăng bài, comment, like, mua, xóa: bộ công cụ tự hỏi "có/không" trước khi bấm. Không tìm cách bỏ bước hỏi. Mỗi lần chạy chỉ một bài.
+- Đăng bài, comment, like, mua, xóa: bộ công cụ tự hỏi "có/không" trước khi bấm. Chạy không có bàn phím thì lệnh in "CẦN XÁC NHẬN": hỏi người dùng trong chat, họ đồng ý rõ ràng thì chạy lại với `--yes`. Không tự thêm `--yes`. Mỗi lần chạy chỉ một bài.
 - Không like hay comment hàng loạt, không nuôi nhiều tài khoản, không chạy vòng lặp đọc dữ liệu lớn. Giới hạn nằm ở `LIMITS` trong `browser_kit/guard.py`.
 - Không cài thêm Playwright, Puppeteer hay thư viện điều khiển trình duyệt khác khi chưa hỏi người dùng.
 - Không đọc, không gửi đi file trong thư mục profile Chrome (chứa phiên đăng nhập).

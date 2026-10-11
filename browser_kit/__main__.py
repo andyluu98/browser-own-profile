@@ -50,7 +50,33 @@ def save_rows(rows, slug, raw_text):
     print(f"Đã lưu {len(rows)} dòng: {path}")
 
 
-def login(site):
+def doctor():
+    """What a helper (person or Claude Code) needs to know before running anything."""
+    import importlib.util
+    import platform
+    ok = True
+    print(f"Python {platform.python_version()} ({sys.executable})")
+    if sys.version_info < (3, 11):
+        ok = False
+        print("  CHƯA ĐẠT: cần Python 3.11 trở lên (https://www.python.org/downloads/)")
+    try:
+        print(f"Chrome: {find_chrome()}")
+    except RuntimeError as e:
+        ok = False
+        print(f"  CHƯA ĐẠT: {e} (cài Google Chrome)")
+    if importlib.util.find_spec("browser_harness") is None:
+        ok = False
+        print(r"  CHƯA ĐẠT: thiếu thư viện, chạy: .venv\Scripts\python -m pip install -r requirements.txt")
+    else:
+        print("browser-harness: đã cài")
+    profile = default_profile()
+    used = (profile / "Default").is_dir()
+    print(f"Chrome riêng: {profile} ({'đã từng mở' if used else 'chưa dùng lần nào, cần login'})")
+    print("SẴN SÀNG" if ok else "CHƯA SẴN SÀNG")
+    return ok
+
+
+def login(site, wait=True):
     if site not in SITES:
         sys.exit(f"Không có trang '{site}'. Các trang có: {', '.join(sorted(SITES))}")
     profile = default_profile()
@@ -59,6 +85,9 @@ def login(site):
     proc = subprocess.Popen([find_chrome(), f"--user-data-dir={profile}", "--no-first-run",
                              "--no-default-browser-check", SITES[site]["url"]])
     print(f"Đã mở {SITES[site]['name']} trong Chrome riêng ({profile}).")
+    if not wait:  # a helper (Claude Code) asks the person to log in and close the window
+        print("Đăng nhập xong thì ĐÓNG HẲN cửa sổ Chrome đó (cả các tab của nó).")
+        return
     print("Đăng nhập xong thì ĐÓNG HẲN cửa sổ Chrome đó (cả các tab của nó). Đang chờ...")
     try:
         proc.wait()
@@ -67,12 +96,32 @@ def login(site):
     print("Xong. Các lệnh sau sẽ dùng phiên đăng nhập này.")
 
 
+def make_ask(pre_confirmed):
+    """Typed answer when a person is at the keyboard. Run by a helper without a keyboard (Claude Code):
+    --yes means the person already confirmed this exact post in the chat; without it, refuse."""
+    def ask(question):
+        if not pre_confirmed and sys.stdin is not None and sys.stdin.isatty():
+            try:
+                return input(question)
+            except EOFError:  # NUL on Windows looks like a terminal but has nobody typing
+                pass
+        if pre_confirmed:
+            print(f"{question}có (đã xác nhận trước bằng --yes)")
+            return "có"
+        print(question)
+        print("CẦN XÁC NHẬN: hỏi người dùng, họ đồng ý thì chạy lại lệnh với --yes")
+        return "không"
+    return ask
+
+
 def main(argv=None):
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(prog="python -m browser_kit")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("doctor", help="kiểm tra máy đã sẵn sàng chưa")
     p = sub.add_parser("login", help="đăng nhập một lần trong Chrome riêng")
     p.add_argument("--site", required=True)
+    p.add_argument("--no-wait", action="store_true", help="mở Chrome rồi trả lời ngay, không chờ đóng cửa sổ")
     p = sub.add_parser("check", help="mở trang, in những gì công cụ thấy")
     p.add_argument("--site", required=True)
     p = sub.add_parser("shopee", help="sản phẩm bán chạy trên Shopee")
@@ -84,19 +133,23 @@ def main(argv=None):
     p.add_argument("--url", required=True)
     p.add_argument("--limit", type=int, default=30)
     p = sub.add_parser("tiktok-post", help="đăng video của bạn qua TikTok Studio (hỏi trước khi đăng)")
+    p.add_argument("--yes", action="store_true", help="người dùng đã xác nhận nội dung này (khi không gõ được)")
     p.add_argument("--video", required=True)
     p.add_argument("--caption", required=True)
     p = sub.add_parser("facebook-post", help="đăng bài chữ lên Facebook của bạn (hỏi trước khi đăng)")
+    p.add_argument("--yes", action="store_true", help="người dùng đã xác nhận nội dung này (khi không gõ được)")
     p.add_argument("--text", required=True)
     for name, sp in sub.choices.items():
-        if name != "login":
+        if name not in ("login", "doctor"):
             sp.add_argument("--main", action="store_true", help="dùng Chrome chính đang mở (Chrome hỏi Allow)")
     args = ap.parse_args(argv)
 
+    if args.cmd == "doctor":
+        sys.exit(0 if doctor() else 1)
     if args.cmd == "login":
-        return login(args.site)
+        return login(args.site, wait=not args.no_wait)
     try:
-        with Kit(main=args.main) as kit:
+        with Kit(main=args.main, ask=make_ask(getattr(args, "yes", False))) as kit:
             if args.cmd == "check":
                 if args.site not in SITES:
                     sys.exit(f"Không có trang '{args.site}'. Các trang có: {', '.join(sorted(SITES))}")
