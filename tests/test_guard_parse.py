@@ -74,6 +74,18 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(rows[1]["comment"], "dòng một dòng hai")
         self.assertEqual(rows[2]["comment"], "")  # sticker-only comment
 
+    def test_shopee_vietnamese_labels(self):
+        text = ("Bàn phím Mẫu C\n799.000\n₫\n4.9\nĐã bán 2,1k\nHà Nội\nTìm sản phẩm tương tự\n"
+                "Bàn phím Mẫu D\n1.050.000\n₫\n5.0\nĐã bán 120\nTP. Hồ Chí Minh\nTìm sản phẩm tương tự\n")
+        rows = parse.shopee_products(text, 10)
+        self.assertEqual([(r["title"], r["sold"]) for r in rows],
+                         [("Bàn phím Mẫu C", "Đã bán 2,1k"), ("Bàn phím Mẫu D", "Đã bán 120")])
+
+    def test_anonymize_keeps_same_person_same_label(self):
+        rows = [{"name": "A", "comment": "1"}, {"name": "B", "comment": "2"}, {"name": "A", "comment": "3"}]
+        self.assertEqual([r["name"] for r in parse.anonymize(rows)], ["Người 1", "Người 2", "Người 1"])
+        self.assertEqual(rows[0]["name"], "A")  # input untouched
+
     def test_tiktok_no_panel(self):
         self.assertEqual(parse.tiktok_comments("For You\nExplore", 10), [])
 
@@ -116,6 +128,22 @@ class GuardTests(unittest.TestCase):
         kit.browser = NoBrowser()
         with self.assertRaises(guard.Declined):
             kit.click({"id": "e1", "name": "Đăng"})
+
+    def test_log_never_has_filled_text(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            kit = guard.Kit.__new__(guard.Kit)
+            kit.log_file = pathlib.Path(tmp, "run.log")
+
+            class FakeBrowser:
+                def fill(self, *a):
+                    return {}
+
+            kit.browser = FakeBrowser()
+            kit.fill({"id": "e1", "name": "Mô tả"}, "nội dung bí mật")
+            log = kit.log_file.read_text(encoding="utf-8")
+        self.assertIn("ô 'Mô tả' (15 ký tự)", log)
+        self.assertNotIn("bí mật", log)
 
     def test_limits_capped(self):
         from browser_kit import recipes

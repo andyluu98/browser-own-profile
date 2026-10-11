@@ -13,17 +13,19 @@ Without it, the separate profile in %LOCALAPPDATA%\\browser-own-profile\\chrome 
 
 import argparse
 import csv
+import datetime
 import pathlib
 import re
 import subprocess
 import sys
 import unicodedata
 
-from . import recipes
+from . import parse, recipes
 from .guard import SITES, Blocked, Declined, Kit, fold
 from .worker import default_profile, find_chrome
 
 OUTPUT = pathlib.Path.cwd() / "output"
+LOGS = pathlib.Path.cwd() / "logs"
 
 
 def next_path(slug, ext):
@@ -132,6 +134,7 @@ def main(argv=None):
     p = sub.add_parser("tiktok-comments", help="bình luận của một video TikTok")
     p.add_argument("--url", required=True)
     p.add_argument("--limit", type=int, default=30)
+    p.add_argument("--an-ten", action="store_true", help="đổi tên người bình luận thành Người 1, Người 2...")
     p = sub.add_parser("tiktok-post", help="đăng video của bạn qua TikTok Studio (hỏi trước khi đăng)")
     p.add_argument("--yes", action="store_true", help="người dùng đã xác nhận nội dung này (khi không gõ được)")
     p.add_argument("--video", required=True)
@@ -148,8 +151,9 @@ def main(argv=None):
         sys.exit(0 if doctor() else 1)
     if args.cmd == "login":
         return login(args.site, wait=not args.no_wait)
+    log_file = LOGS / f"{datetime.datetime.now():%y%m%d-%H%M%S}_{args.cmd}.log"
     try:
-        with Kit(main=args.main, ask=make_ask(getattr(args, "yes", False))) as kit:
+        with Kit(main=args.main, ask=make_ask(getattr(args, "yes", False)), log_file=log_file) as kit:
             if args.cmd == "check":
                 if args.site not in SITES:
                     sys.exit(f"Không có trang '{args.site}'. Các trang có: {', '.join(sorted(SITES))}")
@@ -165,6 +169,8 @@ def main(argv=None):
                 save_rows(rows, f"shopee-{args.keyword}", raw)
             elif args.cmd == "tiktok-comments":
                 rows, raw = recipes.tiktok_comments(kit, args.url, args.limit)
+                if args.an_ten:
+                    rows = parse.anonymize(rows)
                 for i, r in enumerate(rows, 1):
                     print(f"{i:2}. [{r['likes']} thích] {r['name']}: {r['comment'][:90]}")
                 save_rows(rows, "tiktok-binh-luan", raw)
@@ -173,11 +179,15 @@ def main(argv=None):
             elif args.cmd == "facebook-post":
                 print(recipes.facebook_post(kit, args.text))
     except Blocked as e:
+        print(f"Nhật ký: {log_file}")
         sys.exit(f"DỪNG: {e}")
     except Declined as e:
+        print(f"Nhật ký: {log_file}")
         sys.exit(f"Đã hủy: {e}")
     except Exception as e:
+        print(f"Nhật ký: {log_file}")
         sys.exit(f"Lỗi: {e}")
+    print(f"Nhật ký: {log_file}")
 
 
 if __name__ == "__main__":

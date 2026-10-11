@@ -31,7 +31,7 @@ READ_LIMIT = 8000
 MAX_SCROLLS = 5
 SCROLL_PX = 600
 SCROLL_PAUSE_S = 1.5  # time for the page to load the next batch
-CTRL = 2  # CDP modifier bit
+CTRL, CMD = 2, 4  # CDP modifier bits
 # Fixed snippets (no caller-supplied JS). Element ids are validated as e<digits> before use.
 NAME_JS = "el => (typeof window.__bokName === 'function' ? window.__bokName(el) : null)"
 TEXT_JS = "el => (typeof window.__bokText === 'function' ? window.__bokText(el) : null)"
@@ -78,12 +78,15 @@ RETRY_AFTER_RELAUNCH = {"open", "snapshot"}
 CLOSED_MSG = "trang đã bị đóng, hãy mở lại trang"
 NO_ENGINE_MSG = ("chưa có công cụ điều khiển trình duyệt (cần browser-harness); các bước trên web chưa làm "
                  "được")
+IS_MAC = sys.platform == "darwin"
 CHROME_PATHS = (
     pathlib.Path(os.environ.get("PROGRAMFILES", r"C:\Program Files"), "Google", "Chrome", "Application",
                  "chrome.exe"),
     pathlib.Path(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"), "Google", "Chrome",
                  "Application", "chrome.exe"),
     pathlib.Path(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "Application", "chrome.exe"),
+    pathlib.Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+    pathlib.Path.home() / "Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 )
 
 
@@ -96,8 +99,17 @@ def fold(s):
     return " ".join(unicodedata.normalize("NFC", s).split()).casefold()
 
 
+def app_data():
+    """Per-user app data folder: %LOCALAPPDATA% on Windows, ~/Library/Application Support on macOS."""
+    if IS_MAC:
+        return pathlib.Path.home() / "Library" / "Application Support"
+    return pathlib.Path(os.environ.get("LOCALAPPDATA") or pathlib.Path.home())
+
+
 def default_chrome_data():
-    return os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "User Data")
+    if IS_MAC:
+        return str(app_data() / "Google" / "Chrome")
+    return str(app_data() / "Google" / "Chrome" / "User Data")
 
 
 def attach_endpoint(user_data=None):
@@ -117,15 +129,14 @@ def attach_endpoint(user_data=None):
 def default_profile():
     if os.environ.get("BOK_PROFILE"):  # another profile folder, e.g. one already logged in
         return pathlib.Path(os.environ["BOK_PROFILE"])
-    base = os.environ.get("LOCALAPPDATA") or str(pathlib.Path.home())
-    return pathlib.Path(base) / "browser-own-profile" / "chrome"
+    return app_data() / "browser-own-profile" / "chrome"
 
 
 def find_chrome():
     for p in CHROME_PATHS:
         if p.is_file():
             return str(p)
-    found = shutil.which("chrome")
+    found = shutil.which("chrome") or shutil.which("google-chrome")
     if found:
         return found
     raise RuntimeError("không tìm thấy Google Chrome trên máy")
@@ -458,7 +469,8 @@ class Worker:
         if not self.on_element(req, SELECT_JS):
             # role=textbox on a non-editable host (custom widgets): click, select all, type.
             self.click_element(req)
-            self.key("a", code="KeyA", vk=65, modifiers=CTRL, commands=["selectAll"])
+            self.key("a", code="KeyA", vk=65, modifiers=CMD if IS_MAC else CTRL,
+                     commands=["selectAll"])
         if text:
             self.call("Input.insertText", text=text)  # replaces the selection
         else:

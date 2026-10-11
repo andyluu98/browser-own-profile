@@ -5,7 +5,9 @@
 - Hard limits on how much one run may read or post.
 """
 
+import datetime
 import json
+import os
 import pathlib
 import time
 import unicodedata
@@ -89,32 +91,58 @@ class Kit:
     """Browser + checks. main=True: the person's own running Chrome (Chrome asks Allow once per run);
     main=False: the separate profile created by `login` (no prompt)."""
 
-    def __init__(self, main=False, headless=False, profile_dir=None, ask=input, log=print):
+    log_file = None
+
+    def __init__(self, main=False, headless=False, profile_dir=None, ask=input, log_file=None):
         self.browser = Browser(profile_dir=profile_dir, headless=headless, attach=main)
-        self.ask, self.log = ask, log
+        self.ask = ask
+        self.log_file = pathlib.Path(log_file) if log_file else None
+        self.note("bắt đầu", "Chrome chính (--main)" if main else "Chrome riêng")
+
+    def note(self, action, detail=""):
+        """One line per step in the run log: what was opened, clicked, filled (length only), read."""
+        if self.log_file is None:
+            return
+        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.datetime.now().strftime("%H:%M:%S")
+        with self.log_file.open("a", encoding="utf-8") as f:
+            print(f"{stamp}  {action}: {detail}", file=f)
 
     def __enter__(self):
         self.browser.start()
+        self.note("kết nối", f"{self.browser.version}")
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, exc_type, exc, tb):
+        if exc is not None:
+            self.note("dừng", f"{type(exc).__name__}: {exc}")
         self.browser.close()
+        self.note("đóng", "")
 
     def open(self, url, settle=3.0):
+        self.note("mở", url)
         page = self.browser.open(url)
         time.sleep(settle)
         self.snapshot()  # checks for verification pages
         return page
 
+    def _checked(self, url, text):
+        try:
+            check_page(url, text)
+        except Blocked as e:
+            self.note("bị chặn", f"{url} ({e})")
+            raise
+
     def snapshot(self):
         snap = self.browser.snapshot()
-        check_page(snap.get("url", ""), snap.get("text", ""))
+        self._checked(snap.get("url", ""), snap.get("text", ""))
         return snap
 
     def read_text(self):
         snap = self.browser.snapshot()
         text = self.browser.read_text()
-        check_page(snap.get("url", ""), text)
+        self._checked(snap.get("url", ""), text)
+        self.note("đọc", f"{len(text)} ký tự từ {snap.get('url', '')}")
         return text
 
     def click(self, el, confirm_with=None):
@@ -123,19 +151,25 @@ class Kit:
         if confirm_with is not None or is_risky(el.get("name", "")):
             title = confirm_with or el.get("name", "")
             if not ask_yes(f"Bấm nút '{el.get('name', '')}' ({title})?", self.ask):
+                self.note("không bấm", f"'{el.get('name', '')}' (người dùng chưa đồng ý)")
                 raise Declined(f"Không bấm '{el.get('name', '')}' theo yêu cầu")
+            self.note("đồng ý", f"'{el.get('name', '')}' ({title})")
+        self.note("bấm", f"'{el.get('name', '')}'")
         r = self.browser.click(el["id"], expect_name=el.get("name", ""), expect_text=el.get("text") or None)
         time.sleep(1.0)
         self.snapshot()
         return r
 
     def fill(self, el, text):
+        self.note("điền", f"ô '{el.get('name', '')}' ({len(text)} ký tự)")  # never the text itself
         return self.browser.fill(el["id"], text)
 
     def upload(self, el, path):
+        self.note("chọn file", os.path.basename(path))
         return self.browser.upload(el["id"], path)
 
     def scroll(self, el, times=5):
+        self.note("cuộn", f"{times} nấc tại '{el.get('name', '')[:40]}'")
         return self.browser.scroll(el["id"], times=times)
 
     def wait_for(self, test, timeout, every=2.0):

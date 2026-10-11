@@ -39,6 +39,7 @@ def tiktok_comments(kit, video_url, limit=30):
     tabs = find(snap, kind="click", names=("Comments", "Bình luận"))
     tabs = [e for e in tabs if e.get("role") in ("button", "tab")]
     if tabs:  # switches the side panel only; nothing is sent
+        kit.note("bấm", f"tab '{tabs[0]['name']}' (chỉ đổi khung hiển thị)")
         kit.browser.click(tabs[0]["id"], expect_name=tabs[0]["name"])
         time.sleep(3)
     text = kit.read_text()
@@ -101,6 +102,7 @@ def facebook_post(kit, text):
     openers = find(snap, kind="click", contains=("what's on your mind", "bạn đang nghĩ gì"))
     if not openers:
         raise Blocked("không thấy ô 'Bạn đang nghĩ gì?' (chưa đăng nhập Facebook hoặc trang đã đổi)")
+    kit.note("bấm", f"'{openers[0]['name'][:40]}' (mở khung soạn bài)")
     kit.browser.click(openers[0]["id"], expect_name=openers[0]["name"])  # opens the composer only
     time.sleep(2)
 

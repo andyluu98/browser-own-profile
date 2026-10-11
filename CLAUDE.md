@@ -2,7 +2,11 @@
 
 Người dùng repo này thường **không biết mở terminal**. Claude Code tự chạy mọi lệnh; người dùng chỉ đăng nhập trên Chrome và trả lời "có/không". Không bảo người dùng tự gõ lệnh, trừ khi Claude Code không chạy được lệnh đó.
 
-Mọi lệnh chạy trong thư mục repo bằng `.venv\Scripts\python -m browser_kit ...`.
+Mọi lệnh chạy trong thư mục repo bằng `.venv\Scripts\python -m browser_kit ...` (macOS: `.venv/bin/python -m browser_kit ...`).
+
+Cài không được bằng lệnh (máy chưa có Python, lỗi quyền): nhờ người dùng bấm đúp `CaiDat.bat` (Windows) hoặc `CaiDat.command` (macOS) trong thư mục repo.
+
+Mỗi lần chạy ghi nhật ký vào `logs\`; khi có lỗi, đọc file nhật ký mới nhất trước khi đoán nguyên nhân. Bình luận đưa vào tài liệu chia sẻ thì thêm `--an-ten`.
 
 ## 1. Cài đặt (lần đầu, hoặc khi `doctor` báo chưa sẵn sàng)
 

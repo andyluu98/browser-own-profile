@@ -81,3 +81,13 @@ def tiktok_comments(text, limit):
         else:
             i += 1
     return out
+
+
+def anonymize(rows, key="name"):
+    """Replace names with 'Người 1', 'Người 2'... (same person, same label) before saving or sharing."""
+    labels = {}
+    out = []
+    for r in rows:
+        label = labels.setdefault(r[key], f"Người {len(labels) + 1}")
+        out.append({**r, key: label})
+    return out

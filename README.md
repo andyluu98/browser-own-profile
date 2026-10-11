@@ -14,6 +14,10 @@ Bộ này **không lách** cơ chế chống bot. Nó chạy được vì dùng 
 
 Claude tự cài, tự chạy lệnh. Trang nào cần đăng nhập thì Claude mở Chrome cho bạn đăng nhập (chỉ trang đó), bạn đăng nhập xong đóng cửa sổ Chrome rồi báo Claude. Đăng bài thì Claude luôn hỏi bạn trước.
 
+Claude không tự cài được (ví dụ máy chưa có Python): bấm đúp **`CaiDat.bat`** (Windows) hoặc **`CaiDat.command`** (macOS) trong thư mục repo. File này kiểm tra Python (Windows: hỏi rồi cài tự động bằng winget), tạo môi trường, cài thư viện và in "SẴN SÀNG".
+
+Mỗi lần chạy có **nhật ký** trong `logs\` (mở trang nào, bấm nút gì, đọc bao nhiêu chữ; không ghi nội dung đã điền). Bị lỗi thì gửi file nhật ký này cho người hướng dẫn.
+
 Repo đang để private: học viên cần được mời vào repo (GitHub, Settings, Collaborators) hoặc nhận bản nén từ người quản lý thì mới tải được.
 
 ## Bắt đầu trong 10 phút (tự chạy lệnh)
@@ -49,7 +53,7 @@ Kết quả in ra màn hình và lưu ở `output\NN_shopee-ban-phim.csv` (mở 
 | `login --site <trang>` | Mở Chrome riêng để bạn đăng nhập | Đã chạy thật |
 | `check --site <trang>` | Mở trang, in các nút và ô công cụ nhìn thấy | Đã chạy thật |
 | `shopee --keyword ... --min ... --max ... --limit 10` | Sản phẩm bán chạy, tối đa 20 | Đã chạy thật 12/10/2026 |
-| `tiktok-comments --url <link video> --limit 30 --main` | Bình luận một video, tối đa 50 | Đã đọc được bằng Chrome chính 12/10/2026 |
+| `tiktok-comments --url <link video> --limit 30 --main [--an-ten]` | Bình luận một video, tối đa 50; `--an-ten` đổi tên người bình luận thành Người 1, Người 2 | Đã đọc được bằng Chrome chính 12/10/2026 |
 | `tiktok-post --video clip.mp4 --caption "..."` | Đăng video của bạn qua TikTok Studio, **hỏi trước khi bấm Post** | Chưa đăng thật lần nào |
 | `facebook-post --text "..."` | Đăng bài chữ lên Facebook của bạn, **hỏi trước khi bấm Đăng** | Chưa đăng thật lần nào |
 
@@ -65,7 +69,7 @@ Các trang có sẵn: `tiktok`, `tiktok-studio`, `facebook`, `shopee`, `google` 
 4. [An toàn](docs/04_an-toan.md): những gì bộ công cụ tự chặn để bảo vệ tài khoản của bạn.
 5. [Xử lý lỗi](docs/05_xu-ly-loi.md): các lỗi đã gặp thật và cách sửa.
 
-Dùng với Claude Code: chép thư mục này vào máy, Claude Code đọc [SKILL.md](SKILL.md) để biết cách dùng.
+macOS: dùng `.venv/bin/python` thay cho `.venv\Scripts\python`; Chrome riêng nằm ở `~/Library/Application Support/browser-own-profile/chrome`. Bản macOS viết theo đường dẫn chuẩn của Chrome trên Mac nhưng **chưa chạy thử trên máy Mac thật**.
 
 ## Kiểm tra
 
