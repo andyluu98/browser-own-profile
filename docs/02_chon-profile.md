@@ -22,7 +22,9 @@ Bật cho phép một lần: mở `chrome://inspect/#remote-debugging` trong Chr
 |---|---|---|
 | Shopee tìm sản phẩm | Chạy được sau khi `login --site shopee` | Chưa thử |
 | TikTok Studio mở trang upload | Chạy được, không captcha | Chưa thử |
-| TikTok đọc bình luận một video | **Bị captcha kéo thanh trượt** | Đọc được 35 bình luận |
+| TikTok đọc bình luận một video | **Bị captcha kéo thanh trượt**, lần sau khung bình luận trống | Đọc được 35 bình luận |
+| Facebook đi tới nút Đăng | Chạy được sau khi `login --site facebook` | Chưa thử |
+| TikTok Studio đi tới nút Post | Chạy được | Chưa thử |
 
 Gợi ý: bắt đầu bằng Chrome riêng. Trang nào chặn profile mới thì mới dùng `--main`.
 

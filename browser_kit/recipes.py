@@ -43,6 +43,12 @@ def tiktok_comments(kit, video_url, limit=30):
         kit.browser.click(tabs[0]["id"], expect_name=tabs[0]["name"])
         time.sleep(3)
     text = kit.read_text()
+    if not any(parse.COMMENTS_HEADER.match(line.strip()) for line in text.splitlines()):
+        # Seen 12/10/2026: with a fresh separate profile TikTok shows an empty panel (or a slider check);
+        # the person's long-used main Chrome got the comments.
+        kit.note("không có bình luận", "khung Comments trống")
+        raise Blocked("TikTok không tải bình luận cho Chrome này (hay gặp ở Chrome riêng). "
+                      "Thử lại với --main (Chrome chính, bấm Allow một lần).")
     rows = parse.tiktok_comments(text, limit)
     for _ in range(LIMITS["scroll_rounds"]):
         if len(rows) >= limit:
