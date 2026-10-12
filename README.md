@@ -55,7 +55,7 @@ Kết quả in ra màn hình và lưu ở `output\NN_shopee-ban-phim.csv` (mở 
 | `shopee --keyword ... --min ... --max ... --limit 10` | Sản phẩm bán chạy, tối đa 20 | Đã chạy thật 12/10/2026 |
 | `tiktok-comments --url <link video> --limit 30 --main [--an-ten]` | Bình luận một video, tối đa 50; `--an-ten` đổi tên người bình luận thành Người 1, Người 2 | Đọc được bằng Chrome chính 12/10/2026. **Phải có `--main`**: Chrome riêng bị TikTok trả khung bình luận trống hoặc captcha |
 | `tiktok-post --video clip.mp4 --caption "..."` | Đăng video của bạn qua TikTok Studio, **hỏi trước khi bấm Post** | Chạy thật tới nút Post 12/10/2026 (tải video, điền mô tả), chưa bấm đăng thật |
-| `facebook-post --text "..."` | Đăng bài chữ lên Facebook của bạn, **hỏi trước khi bấm Đăng** | Chạy thật tới nút Post 12/10/2026 bằng Chrome riêng, chưa bấm đăng thật |
+| `facebook-post --text "..." [--image anh.png]` | Đăng bài (chữ, kèm một ảnh nếu muốn) lên Facebook của bạn, **hỏi trước khi bấm Đăng** | **Đã đăng thật** một bài kèm ảnh 12/10/2026 bằng Chrome riêng |
 
 Các trang có sẵn: `tiktok`, `tiktok-studio`, `facebook`, `shopee`, `google` (sửa trong `browser_kit/sites.json`).
 

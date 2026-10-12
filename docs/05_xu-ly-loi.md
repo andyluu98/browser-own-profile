@@ -8,11 +8,12 @@
 | "Chrome chưa bật remote debugging" | Dùng `--main` nhưng chưa bật cho phép | Mở `chrome://inspect/#remote-debugging`, tick cho phép |
 | Chrome hỏi Allow liên tục | Mỗi lần chạy `--main` là một kết nối mới | Bình thường. Dùng Chrome riêng nếu không muốn bấm |
 | "Không tách được dòng nào", có file `-raw.txt` | Trang đổi bố cục | Đọc file raw, sửa mốc trong `browser_kit/parse.py`, thêm mẫu vào test |
+| "phần tử đang bị thứ khác che" ở nút Post của Facebook | Chú thích nổi (tooltip) do con trỏ ảo đang nằm trên một biểu tượng | Đã xử lý: công cụ dời con trỏ ra góc rồi kiểm tra lại. Bài không bị đăng khi gặp lỗi này |
 | Bấm không ăn, báo hết thời gian chờ | Tab nằm nền không vẽ lại | Đã xử lý trong `worker.py` (giả lập tab đang được chọn); nếu vẫn gặp, báo lại kèm trang |
 
 ## Những recipe chưa chạy thật
 
-`tiktok-post` đã chạy thật tới nút Post ngày 12/10/2026 (ô mô tả của TikTok Studio là `combobox`, được điền sẵn tên file). `facebook-post` cũng đã chạy thật tới nút Post (Chrome riêng, đã đăng nhập). Cả hai chưa bấm đăng thật lần nào. Lần đầu dùng:
+`tiktok-post` đã chạy thật tới nút Post ngày 12/10/2026 (ô mô tả của TikTok Studio là `combobox`, được điền sẵn tên file). `facebook-post` đã **đăng thật** một bài kèm ảnh (Chrome riêng, đã đăng nhập). `tiktok-post` chưa bấm đăng thật lần nào. Lần đầu dùng:
 
 1. Chạy, đến bước hỏi "Bấm nút 'Post'?" thì gõ **không** để xem các bước trước có đúng không.
 2. Đúng hết thì chạy lại và gõ **có**.

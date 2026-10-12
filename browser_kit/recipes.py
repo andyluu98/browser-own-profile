@@ -108,8 +108,11 @@ def tiktok_studio_post(kit, video_path, caption, upload_timeout=300):
     return kit.read_text()[:500]
 
 
-def facebook_post(kit, text):
-    """Post text on YOUR Facebook profile/feed, asking before pressing Post. One post per run."""
+def facebook_post(kit, text, image=None):
+    """Post text (and optionally one image) on YOUR Facebook feed, asking before pressing Post. One post per
+    run."""
+    if image is not None and not os.path.isfile(image):
+        raise ValueError(f"không thấy file ảnh: {image}")
     kit.open(SITES["facebook"]["url"], settle=5)
     snap = kit.snapshot()
     openers = find(snap, kind="click", contains=("what's on your mind", "bạn đang nghĩ gì"))
@@ -129,14 +132,35 @@ def facebook_post(kit, text):
         raise RuntimeError("không thấy ô soạn bài")
     kit.fill(box, text)
     time.sleep(1)
+    if image is not None:
+        snap = kit.snapshot()
+        inputs = find(snap, kind="upload")
+        if not inputs:  # the composer's file input appears after its Photo/video button
+            pickers = find(snap, kind="click", contains=("photo/video", "ảnh/video"))
+            if not pickers:
+                raise RuntimeError("không thấy nút Ảnh/video trong khung soạn bài")
+            kit.note("bấm", f"'{pickers[-1]['name']}' (mở chỗ thêm ảnh)")
+            kit.browser.click(pickers[-1]["id"], expect_name=pickers[-1]["name"])
+            time.sleep(2)
+            inputs = find(kit.snapshot(), kind="upload")
+        if not inputs:
+            raise RuntimeError("không thấy ô chọn ảnh")
+        # The last file input belongs to the open composer; the first one opens a second composer.
+        kit.upload(inputs[-1], os.path.abspath(image))
+        attached = kit.wait_for(lambda s: find(s, kind="click", contains=("remove post attachment",
+                                                                         "gỡ tệp đính kèm")), timeout=30)
+        if not attached:
+            raise RuntimeError("ảnh chưa gắn vào bài (không thấy nút gỡ ảnh)")
+        time.sleep(3)  # let the preview finish uploading
 
     def post_button(s):
         ready = find(s, kind="click", names=("Post", "Đăng"), enabled=True)
         return ready[-1] if ready else None
 
-    button = kit.wait_for(post_button, timeout=15)
+    button = kit.wait_for(post_button, timeout=30)
     if button is None:
         raise RuntimeError("không thấy nút Đăng")
-    kit.click(button, confirm_with=f"đăng bài lên Facebook: '{text[:60]}'")
+    what = f"'{text[:60]}'" + (f" kèm ảnh {os.path.basename(image)}" if image else "")
+    kit.click(button, confirm_with=f"đăng bài lên Facebook: {what}")
     time.sleep(4)
     return "đã bấm Đăng"

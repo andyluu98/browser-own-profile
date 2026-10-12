@@ -142,6 +142,7 @@ def main(argv=None):
     p = sub.add_parser("facebook-post", help="đăng bài chữ lên Facebook của bạn (hỏi trước khi đăng)")
     p.add_argument("--yes", action="store_true", help="người dùng đã xác nhận nội dung này (khi không gõ được)")
     p.add_argument("--text", required=True)
+    p.add_argument("--image", help="đường dẫn một file ảnh kèm theo bài")
     for name, sp in sub.choices.items():
         if name not in ("login", "doctor"):
             sp.add_argument("--main", action="store_true", help="dùng Chrome chính đang mở (Chrome hỏi Allow)")
@@ -177,7 +178,7 @@ def main(argv=None):
             elif args.cmd == "tiktok-post":
                 print(recipes.tiktok_studio_post(kit, args.video, args.caption))
             elif args.cmd == "facebook-post":
-                print(recipes.facebook_post(kit, args.text))
+                print(recipes.facebook_post(kit, args.text, args.image))
     except Blocked as e:
         print(f"Nhật ký: {log_file}")
         sys.exit(f"DỪNG: {e}")

@@ -394,6 +394,7 @@ class Worker:
     def click_element(self, req):
         """Wait (bounded) until the element can be clicked like a person would, then click its centre."""
         deadline = time.monotonic() + ACTION_TIMEOUT_S
+        moved_away = False
         while True:
             point = self.on_element(req, POINT_JS)
             if "x" in point:
@@ -401,6 +402,11 @@ class Worker:
                 return
             if point["err"] == "gone" or time.monotonic() >= deadline:
                 raise ValueError(NOT_ACTIONABLE[point["err"]])
+            if point["err"] == "covered" and not moved_away:
+                # A hover tooltip from the previous pointer position can sit on the target (Facebook composer,
+                # 12/10/2026): park the pointer in the corner once so it closes, then check again.
+                self.call("Input.dispatchMouseEvent", type="mouseMoved", x=1, y=1)
+                moved_away = True
             time.sleep(0.1)
 
     def key(self, key, code=None, vk=0, text="", modifiers=0, commands=None):

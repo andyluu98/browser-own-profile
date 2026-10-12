@@ -32,7 +32,7 @@ Không bắt đăng nhập trước tất cả các trang. Chạy việc ngườ
 | "Tìm 10 bàn phím bán chạy tầm 1 triệu trên Shopee" | `shopee --keyword "bàn phím" --min 800000 --max 1200000 --limit 10` |
 | "Đọc bình luận video TikTok này <link>" | `tiktok-comments --url "<link>" --limit 30` (bị chặn thì hỏi người dùng có muốn thử `--main` không) |
 | "Đăng video này lên TikTok, caption ..." | `tiktok-post --video "<đường dẫn>" --caption "..."` |
-| "Đăng bài Facebook: ..." | `facebook-post --text "..."` |
+| "Đăng bài Facebook: ..." (có thể kèm ảnh) | `facebook-post --text "..." [--image "<đường dẫn ảnh>"]` |
 | "Mở thử trang X xem được không" | `check --site <trang>` |
 
 Khoảng giá mơ hồ ("tầm 1 triệu"): tự chọn khoảng hợp lý (ví dụ 800.000 đến 1.200.000) và nói rõ đã chọn gì.
