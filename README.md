@@ -25,6 +25,8 @@ Khởi động lại Claude Code. Từ đó, ở **bất kỳ phiên nào**, nó
 
 Lần đầu chạy, plugin tự tạo môi trường Python ở `%LOCALAPPDATA%\browser-own-profile\` (cập nhật plugin không mất môi trường, phiên đăng nhập, kết quả). Cập nhật bản mới: `/plugin update browser-own-profile`.
 
+Repo đang để private: người cài cần được mời vào repo trên GitHub (Settings, Collaborators) thì lệnh cài mới tải được.
+
 
 ## Dùng với Claude Code bằng cách mở thư mục repo
 
