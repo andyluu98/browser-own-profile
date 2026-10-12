@@ -1,0 +1,10 @@
+{
+  "name": "browser-own-profile",
+  "version": "0.2.0",
+  "description": "Điều khiển Chrome đã đăng nhập của bạn qua browser-harness: đăng video TikTok Studio, đăng bài Facebook kèm ảnh, đọc sản phẩm Shopee, đọc bình luận một video TikTok. Hỏi trước khi đăng, dừng khi gặp captcha.",
+  "author": {
+    "name": "andyluu98"
+  },
+  "repository": "https://github.com/andyluu98/browser-own-profile",
+  "keywords": ["browser", "chrome", "tiktok", "facebook", "shopee", "cdp", "browser-harness"]
+}
