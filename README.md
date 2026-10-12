@@ -4,7 +4,30 @@
 
 Bộ này **không lách** cơ chế chống bot. Nó chạy được vì dùng profile đã đăng nhập và làm với lượng nhỏ, giống người dùng thật. Gặp captcha thì nó **dừng và báo**, không giải hộ. Đọc [docs/03](docs/03_vi-sao-bi-chan.md) để hiểu vì sao.
 
-## Dùng với Claude Code (không cần biết terminal)
+## Cài làm plugin Claude Code (khuyên dùng)
+
+Gõ trong Claude Code (cần Claude Code 2.1.275 trở lên):
+
+```
+/plugin install browser-own-profile --marketplace andyluu98/browser-own-profile
+```
+
+Hoặc hai bước:
+
+```
+/plugin marketplace add andyluu98/browser-own-profile
+/plugin install browser-own-profile@browser-own-profile
+```
+
+Khởi động lại Claude Code. Từ đó, ở **bất kỳ phiên nào**, nói ví dụ:
+
+> Dùng browser-own-profile đăng video F:\video\clip.mp4 lên TikTok, caption "...". Hỏi tôi trước khi bấm Post.
+
+Lần đầu chạy, plugin tự tạo môi trường Python ở `%LOCALAPPDATA%\browser-own-profile\` (cập nhật plugin không mất môi trường, phiên đăng nhập, kết quả). Cập nhật bản mới: `/plugin update browser-own-profile`.
+
+Repo đang để private: người cài cần được mời vào repo trên GitHub.
+
+## Dùng với Claude Code bằng cách mở thư mục repo
 
 1. Cài [Claude Code](https://claude.com/claude-code) (bản desktop), Google Chrome.
 2. Mở Claude Code, chọn thư mục để chứa repo, gõ:
